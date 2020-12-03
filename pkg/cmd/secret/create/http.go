@@ -25,23 +25,23 @@ type PubKey struct {
 }
 
 func getPubKey(client *api.Client, host, path string) (*PubKey, error) {
-	result := PubKey{}
-	err := client.REST(host, "GET", path, nil, &result)
+	pk := PubKey{}
+	err := client.REST(host, "GET", path, nil, &pk)
 	if err != nil {
 		return nil, err
 	}
 
-	if result.Key == "" {
+	if pk.Key == "" {
 		return nil, fmt.Errorf("failed to find public key at %s/%s", host, path)
 	}
 
-	pk, err := base64.StdEncoding.DecodeString(result.Key)
+	decoded, err := base64.StdEncoding.DecodeString(pk.Key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode public key: %w", err)
 	}
 
-	copy(result.Raw[:], pk[0:32])
-	return &result, nil
+	copy(pk.Raw[:], decoded[0:32])
+	return &pk, nil
 }
 
 func getOrgPublicKey(client *api.Client, host, orgName string) (*PubKey, error) {
