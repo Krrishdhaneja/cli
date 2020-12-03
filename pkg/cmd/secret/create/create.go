@@ -18,6 +18,12 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
+const (
+	visAll      = "all"
+	visPrivate  = "private"
+	visSelected = "selected"
+)
+
 type CreateOptions struct {
 	HttpClient func() (*http.Client, error)
 	IO         *iostreams.IOStreams
@@ -44,8 +50,9 @@ func NewCmdCreate(f *cmdutil.Factory, runF func(*CreateOptions) error) *cobra.Co
 			$ cat SECRET.txt | gh secret create NEW_SECRET
 			$ gh secret create NEW_SECRET -b"some literal value"
 			$ gh secret create NEW_SECRET -b"@file.json"
-			$ gh secret create ORG_SECRET --org=myOrg --visibility="repo1,repo2,repo3"
-			$ gh secret create ORG_SECRET --org=myOrg --visibility="all"
+			$ gh secret create ORG_SECRET --org
+			$ gh secret create ORG_SECRET --org=anotherOrg --visibility="repo1,repo2,repo3"
+			$ gh secret create ORG_SECRET --org=anotherOrg --visibility="all"
 `),
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -66,8 +73,9 @@ func NewCmdCreate(f *cmdutil.Factory, runF func(*CreateOptions) error) *cobra.Co
 				if opts.OrgName == "" {
 					return &cmdutil.FlagError{Err: errors.New("--visibility not supported for repository secrets; did you mean to pass --org?")}
 				}
-				if opts.Visibility != "all" && opts.Visibility != "private" {
+				if opts.Visibility != visAll && opts.Visibility != visPrivate {
 					opts.RepositoryNames = strings.Split(opts.Visibility, ",")
+					opts.Visibility = visSelected
 				}
 			}
 
@@ -92,8 +100,6 @@ func createRun(opts *CreateOptions) error {
 		return fmt.Errorf("did not understand secret body: %w", err)
 	}
 
-	orgName := opts.OrgName
-
 	c, err := opts.HttpClient()
 	if err != nil {
 		return fmt.Errorf("could not create http client: %w", err)
@@ -101,7 +107,7 @@ func createRun(opts *CreateOptions) error {
 	client := api.NewClientFromHTTP(c)
 
 	var baseRepo ghrepo.Interface
-	if orgName == "" || orgName == "@owner" {
+	if opts.OrgName == "" || opts.OrgName == "@owner" {
 		baseRepo, err = opts.BaseRepo()
 		if err != nil {
 			return fmt.Errorf("could not determine base repo: %w", err)
@@ -109,14 +115,14 @@ func createRun(opts *CreateOptions) error {
 	}
 
 	host := ghinstance.OverridableDefault()
-	if orgName == "@owner" {
-		orgName = baseRepo.RepoOwner()
+	if opts.OrgName == "@owner" {
+		opts.OrgName = baseRepo.RepoOwner()
 		host = baseRepo.RepoHost()
 	}
 
 	var pk *PubKey
-	if orgName != "" {
-		pk, err = getOrgPublicKey(client, host, orgName)
+	if opts.OrgName != "" {
+		pk, err = getOrgPublicKey(client, host, opts.OrgName)
 	} else {
 		pk, err = getRepoPubKey(client, baseRepo)
 	}
@@ -131,9 +137,8 @@ func createRun(opts *CreateOptions) error {
 
 	encoded := base64.StdEncoding.EncodeToString(eBody)
 
-	if orgName != "" {
-		// TODO support visibility
-		err = putOrgSecret(client, pk, host, opts.SecretName, encoded)
+	if opts.OrgName != "" {
+		err = putOrgSecret(client, pk, host, *opts, encoded)
 	} else {
 		err = putRepoSecret(client, pk, baseRepo, opts.SecretName, encoded)
 	}
