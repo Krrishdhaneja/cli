@@ -9,13 +9,6 @@ import (
 	cmdList "github.com/cli/cli/pkg/cmd/secret/list"
 )
 
-// TODO
-// - org vs repo flags
-// - list
-// - add
-// - update
-// - remove
-
 func NewCmdSecret(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "secret <command>",
@@ -30,7 +23,6 @@ func NewCmdSecret(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.AddCommand(cmdList.NewCmdList(f, nil))
 	cmd.AddCommand(cmdCreate.NewCmdCreate(f, nil))
-	// TODO other commands
 
 	return cmd
 }
