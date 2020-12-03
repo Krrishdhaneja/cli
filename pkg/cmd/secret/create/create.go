@@ -12,16 +12,11 @@ import (
 	"github.com/cli/cli/api"
 	"github.com/cli/cli/internal/ghinstance"
 	"github.com/cli/cli/internal/ghrepo"
+	"github.com/cli/cli/pkg/cmd/secret/shared"
 	"github.com/cli/cli/pkg/cmdutil"
 	"github.com/cli/cli/pkg/iostreams"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/nacl/box"
-)
-
-const (
-	visAll      = "all"
-	visPrivate  = "private"
-	visSelected = "selected"
 )
 
 type CreateOptions struct {
@@ -73,9 +68,9 @@ func NewCmdCreate(f *cmdutil.Factory, runF func(*CreateOptions) error) *cobra.Co
 				if opts.OrgName == "" {
 					return &cmdutil.FlagError{Err: errors.New("--visibility not supported for repository secrets; did you mean to pass --org?")}
 				}
-				if opts.Visibility != visAll && opts.Visibility != visPrivate {
+				if opts.Visibility != shared.VisAll && opts.Visibility != shared.VisPrivate {
 					opts.RepositoryNames = strings.Split(opts.Visibility, ",")
-					opts.Visibility = visSelected
+					opts.Visibility = shared.VisSelected
 				}
 			}
 

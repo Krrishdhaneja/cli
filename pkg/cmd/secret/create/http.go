@@ -9,6 +9,7 @@ import (
 
 	"github.com/cli/cli/api"
 	"github.com/cli/cli/internal/ghrepo"
+	"github.com/cli/cli/pkg/cmd/secret/shared"
 )
 
 type SecretPayload struct {
@@ -70,7 +71,7 @@ func putOrgSecret(client *api.Client, pk *PubKey, host string, opts CreateOption
 
 	var repositoryIDs []int
 	var err error
-	if orgName != "" && visibility == visSelected {
+	if orgName != "" && visibility == shared.VisSelected {
 		repositoryIDs, err = mapRepoNameToID(client, host, orgName, opts.RepositoryNames)
 		if err != nil {
 			return fmt.Errorf("failed to look up IDs for repositories %v: %w", opts.RepositoryNames, err)

@@ -8,6 +8,7 @@ import (
 	"github.com/cli/cli/api"
 	"github.com/cli/cli/internal/ghinstance"
 	"github.com/cli/cli/internal/ghrepo"
+	"github.com/cli/cli/pkg/cmd/secret/shared"
 	"github.com/cli/cli/pkg/cmdutil"
 	"github.com/cli/cli/pkg/iostreams"
 	"github.com/cli/cli/utils"
@@ -111,11 +112,11 @@ type Secret struct {
 
 func fmtVisibility(s Secret) string {
 	switch s.Visibility {
-	case "all":
+	case shared.VisAll:
 		return "Visible to all repositories"
-	case "private":
+	case shared.VisPrivate:
 		return "Visible to private repositories"
-	case "selected":
+	case shared.VisSelected:
 		// TODO print how many? print which ones?
 		return "Visible to selected repositories"
 	}
