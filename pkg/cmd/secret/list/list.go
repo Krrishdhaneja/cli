@@ -95,7 +95,10 @@ func listRun(opts *ListOptions) error {
 		tp.EndRow()
 	}
 
-	tp.Render()
+	err = tp.Render()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
