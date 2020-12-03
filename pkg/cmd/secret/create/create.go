@@ -125,6 +125,7 @@ func createRun(opts *CreateOptions) error {
 		return fmt.Errorf("failed to fetch public key: %w", err)
 	}
 
+	// TODO provide encryption via opts so it can be controlled in tests(?)
 	eBody, err := box.SealAnonymous(nil, body, &pk.Raw, nil)
 	if err != nil {
 		return fmt.Errorf("failed to encrypt body: %w", err)
