@@ -130,7 +130,7 @@ func createRun(opts *CreateOptions) error {
 		return fmt.Errorf("failed to fetch public key: %w", err)
 	}
 
-	eBody, err := box.SealAnonymous(nil, body, &pk.Key, nil)
+	eBody, err := box.SealAnonymous(nil, body, &pk.Raw, nil)
 	if err != nil {
 		return fmt.Errorf("failed to encrypt body: %w", err)
 	}
